@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
+@CrossOrigin(origins = "http://3.37.22.176:8080")
 @RequiredArgsConstructor
 @RestController
 public class FileController {

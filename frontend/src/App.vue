@@ -88,7 +88,7 @@ export default {
         }
       ]));
 
-      axios.post('http://3.37.22.176:8080', formData, {
+      axios.post('http://3.37.22.176:8081', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -148,7 +148,7 @@ export default {
     }
   },
   mounted(){
-    axios.get('http://3.37.22.176:8080')
+    axios.get('http://3.37.22.176:8081')
         .then(response => {
           this.fixedExtensions = response.data.fixedExtensionDtos;
           this.customExtensions = response.data.customExtensionDtos;
