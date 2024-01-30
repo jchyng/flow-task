@@ -1,0 +1,73 @@
+form {
+    padding: 30px;
+}
+
+label{
+    margin-right: 20px;
+}
+
+input[type=text]{
+    width: 200px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+}
+
+.left-space {
+    width: 120px;
+}
+
+
+#fixed-extensions {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+
+#custom-extensions {
+    display: flex;
+}
+
+#custom-extensions-area {
+    border: 1px solid gray;
+    border-radius: 4px;
+
+    margin-bottom: 4px;
+    padding: 10px;
+    height: 200px;
+    width: 420px;
+
+    overflow: auto;
+}
+
+#custom-extensions-count{
+    display: block;
+    margin-bottom: 10px;
+
+    font-size: 12px;
+    color: gray;
+}
+
+
+.added-custom-extension{
+    display: inline-block;
+    padding: 2px 4px;
+    border: 1px solid gray;
+    margin: 0px 6px 4px 0px;
+    border-radius: 4px;
+}
+
+.added-custom-extension > span {
+    color: #1F1F1F;
+}
+
+.added-custom-extension > button {
+    background-color: transparent;
+    border: none;
+    height: 21.5px;
+}
+
+
+#upload-file {
+    display: flex;
+    justify-content: space-between;
+}
