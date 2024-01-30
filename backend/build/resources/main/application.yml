@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${USERNAME}
+    password: ${PASSWORD}
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    defer-datasource-initialization: true
+  sql.init.mode: always
+
+
+
+#서버 리소스 낭비를 막기 위해 500MB로 제한 (정책이 없기 때문에 크기는 임의로 선택)
+spring.servlet.multipart:
+  maxFileSize: 500MB
+  maxRequestSize: 500MB
