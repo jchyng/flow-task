@@ -1,165 +1,233 @@
 <template>
   <div id="app">
     <form @submit.prevent>
-        <div id="fixed-extensions">
-            <span class="left-space">고정 확장자</span>
-            <div v-for="(extension, idx) in fixedExtensions" :key="idx">
-              <input type="checkbox" :id="extension.name" v-model="fixedExtensions[idx].isChecked">
-              <label :for="extension.name">{{extension.name}}</label>
-            </div>
+      <div id="fixed-extensions">
+        <span class="left-space">고정 확장자</span>
+        <div v-for="(extension, idx) in fixedExtensions" :key="idx">
+          <input
+            type="checkbox"
+            :id="extension.name"
+            v-model="fixedExtensions[idx].isChecked"
+          />
+          <label :for="extension.name">{{ extension.name }}</label>
         </div>
+      </div>
 
-        <div id="custom-extensions">
-          <span class="left-space">커스텀 확장자</span>
+      <div id="custom-extensions">
+        <span class="left-space">커스텀 확장자</span>
+        <div>
           <div>
-            <div>
-                <input type="text" placeholder="확장자 입력" v-model="inputExtension">
-                <button @click="addCustomExtension">+추가</button>
-            </div>
+            <input
+              type="text"
+              placeholder="확장자 입력"
+              v-model="inputExtension"
+            />
+            <button @click="addCustomExtension">+추가</button>
+            <input
+              type="checkbox"
+              id="disableValidate"
+              v-model="this.disableValidate"
+            />
+            <label for="disableValidate">프론트 검증 차단</label>
+          </div>
 
-            <div id="custom-extensions-area">
-                <span id="custom-extensions-count">{{ customExtensions.length }}/{{ maxCount }}</span>
-                <div class="added-custom-extension" v-for="(extension, idx) in customExtensions" :key="idx">
-                    <span>{{ extension }}</span>
-                    <button @click="removeCustomExtension(idx)">x</button>
-                </div>
-            </div>
-            <div id="upload-file">
-              <input type="file" @change="fileChange"/>
-              <button @click="uploadFile">파일 업로드</button>
+          <div id="custom-extensions-area">
+            <span id="custom-extensions-count"
+              >{{ customExtensions.length }}/{{ maxCount }}</span>
+            <div
+              class="added-custom-extension"
+              v-for="(extension, idx) in customExtensions"
+              :key="idx"
+            >
+              <span>{{ extension }}</span>
+              <button @click="removeCustomExtension(idx)">x</button>
             </div>
           </div>
+          <div id="upload-file">
+            <input type="file" @change="fileChange" />
+            <button @click="uploadFile">파일 업로드</button>
+          </div>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
-  name: 'App',
+  name: "App",
   data() {
     return {
+      initFixedExtensions: [],
+      initCustomExtensions: [],
       fixedExtensions: [],
       customExtensions: [],
       inputExtension: "",
       maxCount: 200,
       uploadedFile: null,
-    }
+      disableValidate: false
+    };
   },
   methods: {
-    addCustomExtension(){
-      if(this.validateInputCustomExtensions()){
-        this.customExtensions.push(this.inputExtension);
-        this.inputExtension = "";
+    addCustomExtension() {
+      try{
+        if(!this.disableValidate){
+          this.validateExtensionLength(this.inputExtension);
+          this.validateExtensionDuplicate(this.inputExtension);
+          this.validateCustomExtensionsSize();
+        }
+
+        this.customExtensions.push(this.inputExtension.toLocaleLowerCase());
+      } catch(e){
+        alert(e.message);
+      } finally {
+        this.inputExtension = '';
       }
     },
-    removeCustomExtension(idx){
+    removeCustomExtension(idx) {
       this.customExtensions.splice(idx, 1);
     },
-    fileChange(event){
-      const fileInput = event.target;
+    fileChange(event) {
+      const inputFile = event.target;
 
-      if (fileInput.files.length > 0) {
-        this.uploadedFile = fileInput.files[0];
-      } else {
+      if (inputFile.files.length <= 0) return;
+
+      try{
+        if(!this.disableValidate){
+          this.validateFileExtensionRestricted(inputFile.files[0].name);
+          this.validateFileLength(inputFile.files[0].name)
+          this.validateFileNameInSpecialCharacter(inputFile.files[0].name);
+        }
+
+        this.uploadedFile = inputFile.files[0];
+      } catch(e){
+        alert(e.message);
         this.uploadedFile = null;
-        fileInput.value = '';
-      }
-    },
-    uploadFile(){
-      var uploadedFile = this.uploadedFile;
-      var dto = {
-        fixedExtensionDtos : this.fixedExtensions,
-        customExtensionDtos: this.customExtensions,
+        inputFile.value = "";
       }
 
-      if (uploadedFile === null || !this.validateFileExtension(uploadedFile.name)) {
-        alert('제한된 확장자를 제외한 파일을 업로드 해주세요.')
+    },
+    uploadFile() {
+      if (this.uploadedFile === null) {
+        alert("파일을 업로드 해주세요.");
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', uploadedFile);
-      formData.append('extensionDto', new Blob([
-        JSON.stringify(dto), {
-          type: "application/json"
-        }
-      ]));
+      var dto = {
+        fixedExtensionDtos: this.dirtyCheckFixedExtension(),
+        addedCustomExtensionDtos: this.getAddedCustomExtension(),
+        removedCustomExtensionDtos: this.getRemovedCustomExtension(),
+      };
 
-      axios.post('http://3.37.22.176:8081', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then(() => {
-        alert("파일이 정상적으로 업로드 되었습니다.");
-        window.location.reload(); 
-      })
-      .catch(error => {
-        if(error.response.status === 400)
-        console.error('파일 업로드 실패: 업로드가 제한된 확장자 입니다.');
-      });
-      
+      const formData = new FormData();
+      formData.append("file", this.uploadedFile);
+      formData.append("extensionDto", new Blob([JSON.stringify(dto), { type: "application/json" }]));
+
+      axios
+        .post("http://3.37.22.176:8081", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          alert(response.data);
+          window.location.reload();
+        })
+        .catch((error) => {
+          if (error.response.status === 400) {
+            alert(error.response.data);
+          }
+        });
+    },
+    dirtyCheckFixedExtension() {
+      return this.fixedExtensions.filter((item) => this.initFixedExtensions.some(
+        (initItem) => initItem.id === item.id && initItem.isChecked !== item.isChecked)
+      );
+    },
+    getAddedCustomExtension() {
+      return this.customExtensions.filter(
+        (item) => !this.initCustomExtensions.includes(item)
+      );
+    },
+    getRemovedCustomExtension() {
+      return this.initCustomExtensions.filter(
+        (initItem) => !this.customExtensions.includes(initItem)
+      );
     },
     getFileExtension(filename) {
       const dotIndex = filename.lastIndexOf(".");
       return dotIndex !== -1 ? filename.slice(dotIndex + 1) : "";
     },
+    getFileNameWithoutExtension(filename) {
+      const dotIndex = filename.lastIndexOf(".");
+      return dotIndex !== -1 ? filename.slice(0, dotIndex) : filename;
+    },
     getCheckedFixedExtensionNames() {
-    return this.fixedExtensions
-      .filter(extension => extension.isChecked)
-      .map(extension => extension.name);
+      return this.fixedExtensions
+        .filter((extension) => extension.isChecked)
+        .map((extension) => extension.name);
     },
-    inputCustomExtensionIsDuplicate(){
-      var isIncludeInCustomExtensions = this.customExtensions.includes(this.inputExtension);
-      var isIncludeInFixedExtensions = this.getCheckedFixedExtensionNames().includes(this.inputExtension)
-
-      return isIncludeInCustomExtensions || isIncludeInFixedExtensions;
+    validateExtensionLength(extension){
+      if (extension.length < 1 || extension.length > 20) {
+        throw new Error("확장자는 1~20자까지 허용됩니다.");
+      }
     },
-    validateInputCustomExtensions(){
-      if(this.inputExtension === ""){
-        alert("확장자를 입력해주세요");
-        return false;
+    validateExtensionDuplicate(extension) {
+      if(this.customExtensions.includes(extension) || this.getCheckedFixedExtensionNames().includes(extension)){
+          throw new Error("확장자는 중복 입력할 수 없습니다.");
       }
-      if(this.inputCustomExtensionIsDuplicate()) {
-        alert("확장자는 중복 입력할 수 없습니다.");
-        this.inputExtension = "";
-        return false;
-      }
-      if(this.customExtensionDtos.length >= this.maxCount){
-        alert("확장자는 최대 " + this.maxCount + "까지만 입력하실 수 있습니다.");
-        this.inputExtension = "";
-        return false;
-      }
-
-      return true;
     },
-    validateFileExtension(filename){
+    validateCustomExtensionsSize(){
+      if (this.customExtensions.length >= this.maxCount) {
+        throw new Error("확장자는 최대 " + this.maxCount + "까지만 입력하실 수 있습니다.");
+      }
+    },
+    validateFileExtensionRestricted(filename) {
       var extension = this.getFileExtension(filename);
       var checkedFixedExtensions = this.getCheckedFixedExtensionNames();
 
-      if(this.customExtensions.indexOf(extension) !== -1 || checkedFixedExtensions.indexOf(extension) !== -1){
-        alert(extension + '확장자는 업로드 할 수 없습니다.');
-        return false;
+      if(this.customExtensions.indexOf(extension) !== -1 && checkedFixedExtensions.indexOf(extension) !== -1){
+        throw new Error(extension + '는 사용이 제한된 확장자 입니다.');
       }
-      return true;
+    },
+    validateFileLength(filename){
+      const fineNameWithoutExtension = this.getFileNameWithoutExtension(filename);
+      
+      if(fineNameWithoutExtension.length > 260){
+        throw new Error("파일 이름은 260자를 초과할 수 없습니다.");
+      }
+    },
+    validateFileNameInSpecialCharacter(filename){
+      const allowedPattern = /^[가-힣a-z0-9_\s-]+$/i;
+      const fineNameWithoutExtension = this.getFileNameWithoutExtension(filename);
+
+      if (!allowedPattern.test(fineNameWithoutExtension)) {
+        throw new Error("파일 이름은 '-', '_' 이외의 특수 문자를 사용할 수 없습니다.");
+      }
     }
   },
-  mounted(){
-    axios.get('http://3.37.22.176:8081')
-        .then(response => {
-          this.fixedExtensions = response.data.fixedExtensionDtos;
-          this.customExtensions = response.data.customExtensionDtos;
-        })
-        .catch(error => {
-          console.error('확장자 조회 실패: ', error);
-        })
-  }
-}
+  mounted() {
+    axios
+      .get("http://3.37.22.176:8081")
+      .then((response) => {
+        this.fixedExtensions = response.data.fixedExtensionDtos;
+        this.initFixedExtensions = JSON.parse(
+          JSON.stringify(this.fixedExtensions)
+        );
+        this.customExtensions = response.data.customExtensionDtos;
+        this.initCustomExtensions = JSON.parse(
+          JSON.stringify(this.customExtensions)
+        );
+      })
+      .catch((error) => {
+        console.log("확장자 조회 실패: ", error);
+      });
+  },
+};
 </script>
 
 <style>
-  @import "./assets/css/style.css"
+@import "./assets/css/style.css";
 </style>
