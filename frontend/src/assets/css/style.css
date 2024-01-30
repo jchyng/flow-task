@@ -66,6 +66,13 @@ input[type=text]{
     height: 21.5px;
 }
 
+#disableValidate {
+    margin-left: 20px;
+}
+
+label[for="disableValidate"] {
+    color: tomato;
+}
 
 #upload-file {
     display: flex;

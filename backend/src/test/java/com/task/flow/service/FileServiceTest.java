@@ -1,6 +1,5 @@
 package com.task.flow.service;
 
-import com.task.flow.exception.InvalidFileExtensionException;
 import com.task.flow.repository.CustomExtensionRepository;
 import com.task.flow.repository.FixedExtensionRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -28,14 +27,14 @@ class FileServiceTest {
 
     @DisplayName("업로드한 파일의 확장자를 검사한다. - 제한된 확장자 사용")
     @Test
-    void upload_restrictedExtensionsFile_InvalidExtensionsException() throws IOException {
+    void upload_restrictedExtensionsFile_Exception() {
         //Given
         String content = "제한된 확장자를 가진 파일 업로드 시 예외를 반환한다.";
         MockMultipartFile file = new MockMultipartFile("file", "test.exe", "multipart/form-data", content.getBytes());
         given(fixedExtensionRepository.existsByNameAndIsChecked(anyString())).willReturn(1);
         //When & Then
-        assertThatThrownBy(() -> fileService.validateFileExtension(file))
-                .isInstanceOf(InvalidFileExtensionException.class);
+        assertThatThrownBy(() -> fileService.fileUpload(file))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @DisplayName("업로드한 파일의 확장자를 검사한다. - 허가된 확장자 사용")
@@ -46,6 +45,7 @@ class FileServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "test.exe", "multipart/form-data", content.getBytes());
         given(fixedExtensionRepository.existsByNameAndIsChecked(anyString())).willReturn(0);
         //When & Then
-        fileService.validateFileExtension(file);
+        fileService.fileUpload(file);
     }
+
 }

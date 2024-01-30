@@ -15,8 +15,6 @@ spring:
     defer-datasource-initialization: true
   sql.init.mode: always
 
-
-
 #서버 리소스 낭비를 막기 위해 500MB로 제한 (정책이 없기 때문에 크기는 임의로 선택)
 spring.servlet.multipart:
   maxFileSize: 500MB
