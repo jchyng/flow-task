@@ -14,15 +14,11 @@ public class FileValidator {
         }
     }
 
-    public void validateFileNameInSpecialCharacter(String fileName){
+    public void validateFileNameContainSpecialCharacter(String fileName){
         Pattern allowedPattern = Pattern.compile("^[가-힣a-z0-9_\\s-]+$", Pattern.CASE_INSENSITIVE);
 
         if (!allowedPattern.matcher(fileName).matches()) {
             throw new IllegalArgumentException("파일 이름은 '-', '_' 이외의 특수 문자를 사용할 수 없습니다.");
         }
-    }
-
-    public void validateFileExtensionRestricted(String extension){
-
     }
 }

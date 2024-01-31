@@ -2,6 +2,7 @@ package com.task.flow.service;
 
 import com.task.flow.repository.CustomExtensionRepository;
 import com.task.flow.repository.FixedExtensionRepository;
+import com.task.flow.validation.FileValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ class FileServiceTest {
     @InjectMocks private FileService fileService;
     @Mock private FixedExtensionRepository fixedExtensionRepository;
     @Mock private CustomExtensionRepository customExtensionRepository;
+    @Mock private FileValidator fileValidator;
 
 
 
@@ -47,5 +49,4 @@ class FileServiceTest {
         //When & Then
         fileService.fileUpload(file);
     }
-
 }

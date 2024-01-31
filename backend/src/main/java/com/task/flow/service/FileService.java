@@ -39,7 +39,7 @@ public class FileService {
         String extension = fileInfo[1];
 
         fileValidator.validateFileNameLength(fileName);
-        fileValidator.validateFileNameInSpecialCharacter(fileName);
+        fileValidator.validateFileNameContainSpecialCharacter(fileName);
         validateRestrictedExtension(extension);
 
         /* File 저장 로직 */

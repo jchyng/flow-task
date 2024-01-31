@@ -98,7 +98,7 @@ export default {
         if(!this.disableValidate){
           this.validateFileExtensionRestricted(inputFile.files[0].name);
           this.validateFileLength(inputFile.files[0].name)
-          this.validateFileNameInSpecialCharacter(inputFile.files[0].name);
+          this.validateFileNameContainSpecialCharacter(inputFile.files[0].name);
         }
 
         this.uploadedFile = inputFile.files[0];
@@ -199,7 +199,7 @@ export default {
         throw new Error("파일 이름은 260자를 초과할 수 없습니다.");
       }
     },
-    validateFileNameInSpecialCharacter(filename){
+    validateFileNameContainSpecialCharacter(filename){
       const allowedPattern = /^[가-힣a-z0-9_\s-]+$/i;
       const fineNameWithoutExtension = this.getFileNameWithoutExtension(filename);
 
