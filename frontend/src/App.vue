@@ -94,14 +94,19 @@ export default {
 
       if (inputFile.files.length <= 0) return;
 
+      const file = inputFile.files[0]; 
+      const filename = Array.from(file.name.normalize()).join(""); //UTF16 -> UTF8
+      const tmpFile = new File([file], filename, { type: file.type });  
+        
+
       try{
         if(!this.disableValidate){
-          this.validateFileExtensionRestricted(inputFile.files[0].name);
-          this.validateFileLength(inputFile.files[0].name)
-          this.validateFileNameContainSpecialCharacter(inputFile.files[0].name);
+          this.validateFileExtensionRestricted(tmpFile.name);
+          this.validateFileLength(tmpFile.name)
+          this.validateFileNameContainSpecialCharacter(tmpFile.name);
         }
+        this.uploadedFile = tmpFile;
 
-        this.uploadedFile = inputFile.files[0];
       } catch(e){
         alert(e.message);
         this.uploadedFile = null;
@@ -157,12 +162,12 @@ export default {
       );
     },
     getFileExtension(filename) {
-      const dotIndex = filename.lastIndexOf(".");
-      return dotIndex !== -1 ? filename.slice(dotIndex + 1) : "";
+      const seperatedFile = filename.split(".");
+      return seperatedFile[1];
     },
     getFileNameWithoutExtension(filename) {
-      const dotIndex = filename.lastIndexOf(".");
-      return dotIndex !== -1 ? filename.slice(0, dotIndex) : filename;
+      const seperatedFile = filename.split(".");
+      return seperatedFile[0];
     },
     getCheckedFixedExtensionNames() {
       return this.fixedExtensions
@@ -200,10 +205,10 @@ export default {
       }
     },
     validateFileNameContainSpecialCharacter(filename){
-      const allowedPattern = /^[가-힣a-z0-9_\s-]+$/i;
-      const fineNameWithoutExtension = this.getFileNameWithoutExtension(filename);
-
-      if (!allowedPattern.test(fineNameWithoutExtension)) {
+      const allowedPattern = /^[ㄱ-ㅎ가-힣a-zA-Z0-9_\s-]*$/;
+      const fileNameWithoutExtension = this.getFileNameWithoutExtension(filename);
+      
+      if (!allowedPattern.test(fileNameWithoutExtension)) {
         throw new Error("파일 이름은 '-', '_' 이외의 특수 문자를 사용할 수 없습니다.");
       }
     }

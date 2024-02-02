@@ -99,7 +99,7 @@ public class ValidationTest {
     @Test
     void validateFile_NoContain_specialCharacter() {
         //Given
-        String fileName = "123";
+        String fileName = "가";
         //When & Then
         fileValidator.validateFileNameContainSpecialCharacter(fileName);
     }

@@ -15,9 +15,9 @@ public class FileValidator {
     }
 
     public void validateFileNameContainSpecialCharacter(String fileName){
-        Pattern allowedPattern = Pattern.compile("^[가-힣a-z0-9_\\s-]+$", Pattern.CASE_INSENSITIVE);
+        String pattern = "^[ㄱ-ㅎ가-힣a-zA-Z0-9_\\s-]*$";
 
-        if (!allowedPattern.matcher(fileName).matches()) {
+        if (!Pattern.matches(pattern, fileName)) {
             throw new IllegalArgumentException("파일 이름은 '-', '_' 이외의 특수 문자를 사용할 수 없습니다.");
         }
     }
